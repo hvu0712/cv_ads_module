@@ -70,6 +70,9 @@ android {
             buildConfigField "Boolean", "is_debug", "true"
         }
     }
+    buildFeatures {
+        buildConfig true
+    }
 }
 
 dependencies {
