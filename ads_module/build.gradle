@@ -52,8 +52,8 @@ afterEvaluate {
             release(MavenPublication) {
                 from components.findByName('release')
                 groupId = 'com.github.hvu0712'
-                artifactId = 'ads_module'
-                version = '1.0.4'
+                artifactId = 'cv_ads_module'
+                version = '1.0.0'
             }
         }
         repositories {
