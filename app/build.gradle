@@ -1,0 +1,88 @@
+plugins {
+    alias(libs.plugins.android.application)
+    alias(libs.plugins.kotlin.android)
+}
+
+android {
+    namespace 'com.ads.testlib'
+    compileSdk 34
+
+    defaultConfig {
+        applicationId "com.ads.testlib"
+        minSdk 24
+        targetSdk 34
+        versionCode 1
+        versionName "1.0"
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+    kotlinOptions {
+        jvmTarget = '1.8'
+    }
+    flavorDimensions "default"
+    productFlavors {
+        appDev {
+            manifestPlaceholders = [ad_app_id: "ca-app-pub-3940256099942544~3347511713"]
+
+            buildConfigField "String", "inter_splash", "\"ca-app-pub-3940256099942544/1033173712\""
+            buildConfigField "String", "inter_view", "\"ca-app-pub-3940256099942544/1033173712\""
+            buildConfigField "String", "native_language_first_open", "\"ca-app-pub-3940256099942544/2247696110\""
+            buildConfigField "String", "native_intro", "\"ca-app-pub-3940256099942544/2247696110\""
+            buildConfigField "String", "banner_collap_home", "\"ca-app-pub-3940256099942544/2014213617\""
+            buildConfigField "String", "banner_collap_list_sound", "\"ca-app-pub-3940256099942544/2014213617\""
+            buildConfigField "String", "native_play", "\"ca-app-pub-3940256099942544/2247696110\""
+            buildConfigField "String", "native_create_sound", "\"ca-app-pub-3940256099942544/2247696110\""
+            buildConfigField "String", "inter_trend", "\"ca-app-pub-3940256099942544/1033173712\""
+            buildConfigField "String", "inter_home", "\"ca-app-pub-3940256099942544/1033173712\""
+            buildConfigField "String", "reward_sound", "\"ca-app-pub-3940256099942544/5224354917\""
+
+
+            buildConfigField "Boolean", "is_debug", "true"
+
+        }
+        appRelease {
+            manifestPlaceholders = [ad_app_id: "ca-app-pub-3940256099942544~3347511713"]
+
+            buildConfigField "String", "inter_splash", "\"ca-app-pub-3940256099942544/1033173712\""
+            buildConfigField "String", "inter_view", "\"ca-app-pub-3940256099942544/1033173712\""
+            buildConfigField "String", "native_language_first_open", "\"ca-app-pub-3940256099942544/2247696110\""
+            buildConfigField "String", "native_intro", "\"ca-app-pub-3940256099942544/2247696110\""
+            buildConfigField "String", "banner_collap_home", "\"ca-app-pub-3940256099942544/2014213617\""
+            buildConfigField "String", "banner_collap_list_sound", "\"ca-app-pub-3940256099942544/2014213617\""
+            buildConfigField "String", "native_play", "\"ca-app-pub-3940256099942544/2247696110\""
+            buildConfigField "String", "native_create_sound", "\"ca-app-pub-3940256099942544/2247696110\""
+            buildConfigField "String", "inter_trend", "\"ca-app-pub-3940256099942544/1033173712\""
+            buildConfigField "String", "inter_home", "\"ca-app-pub-3940256099942544/1033173712\""
+            buildConfigField "String", "reward_sound", "\"ca-app-pub-3940256099942544/5224354917\""
+
+
+            buildConfigField "Boolean", "is_debug", "true"
+        }
+    }
+}
+
+dependencies {
+
+    implementation libs.androidx.core.ktx
+    implementation libs.androidx.appcompat
+    implementation libs.material
+    implementation libs.androidx.activity
+    implementation libs.androidx.constraintlayout
+    testImplementation libs.junit
+    androidTestImplementation libs.androidx.junit
+    androidTestImplementation libs.androidx.espresso.core
+
+    implementation project(path: ':ads_module')
+
+}

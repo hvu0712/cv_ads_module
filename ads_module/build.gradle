@@ -1,0 +1,63 @@
+plugins {
+    alias(libs.plugins.android.library)
+    id('maven-publish')
+    alias(libs.plugins.kotlin.android)
+}
+
+android {
+    namespace 'com.ads.ads_module'
+    compileSdk 34
+
+    defaultConfig {
+        minSdk 24
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        consumerProguardFiles "consumer-rules.pro"
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+}
+
+dependencies {
+
+    implementation libs.androidx.appcompat
+    implementation libs.material
+    implementation 'com.google.android.gms:play-services-ads:22.4.0'
+    implementation 'com.facebook.shimmer:shimmer:0.5.0'
+    implementation 'com.intuit.sdp:sdp-android:1.0.6'
+    implementation 'androidx.lifecycle:lifecycle-process:2.2.0'
+    implementation 'com.github.ybq:Android-SpinKit:1.1.0'
+    implementation 'com.google.ads.mediation:facebook:6.7.0.0'
+    implementation 'com.google.ads.mediation:adcolony:4.6.3.0'
+    implementation 'com.google.ads.mediation:applovin:10.3.4.0'
+    implementation 'com.google.android.gms:play-services-appset:16.0.0'
+    implementation 'com.google.android.gms:play-services-basement:17.1.1'
+    implementation("com.google.android.ump:user-messaging-platform:2.1.0")
+    implementation libs.androidx.activity
+    implementation libs.androidx.constraintlayout
+
+}
+afterEvaluate {
+    publishing {
+        publications {
+            release(MavenPublication) {
+                from components.findByName('release')
+                groupId = 'com.github.hvu0712'
+                artifactId = 'ads_module'
+                version = '1.0.4'
+            }
+        }
+        repositories {
+            mavenLocal()
+        }
+    }
+}
