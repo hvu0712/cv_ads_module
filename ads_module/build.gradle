@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.android.library)
     id('maven-publish')
+    id('com.jfrog.artifactory')
     alias(libs.plugins.kotlin.android)
 }
 
@@ -47,6 +48,19 @@ dependencies {
 
 }
 afterEvaluate {
+    artifactory {
+        contextUrl = 'https://trialwlsbqq.jfrog.io/artifactory/cv-ads-gradle-dev/' // Địa chỉ Artifactory của bạn
+        publish {
+            repository {
+                repoKey = 'cv-ads-gradle-dev' // Thay thế với repository key
+                username = project.findProperty("artifactory_user") ?: "daxua0@gmail.com" // Tên người dùng JFrog
+                password = project.findProperty("artifactory_password") ?: "AKCpBtNHkBL1VQd3t8FQPypVYNBcvXzoUR5cTnSfzJB6ZeWNuacpQ73iBAxNTpXWuKuHJjxpx" // Mật khẩu JFrog
+            }
+            defaults {
+                publications('mavenJava')
+            }
+        }
+    }
     publishing {
         publications {
             release(MavenPublication) {
