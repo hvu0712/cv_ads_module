@@ -40,7 +40,7 @@ dependencies {
     implementation 'com.google.ads.mediation:applovin:10.3.4.0'
     implementation 'com.google.android.gms:play-services-appset:16.0.0'
     implementation 'com.google.android.gms:play-services-basement:17.1.1'
-    implementation("com.google.android.ump:user-messaging-platform:2.1.0")
+    implementation("com.google.android.ump:user-messaging-platform:3.0.0")
 
     // fb ads
     implementation 'com.facebook.android:audience-network-sdk:6.16.0'
