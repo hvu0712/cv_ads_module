@@ -27,6 +27,6 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "testLib"
+rootProject.name = "cv_ads_module"
 include ':app'
 include ':ads_module'
