@@ -62,3 +62,6 @@
 }
 
 -keep class com.ads.ads_module.** { *; }
+
+-keep class com.yandex.metrica.** { *; }
+-dontwarn com.yandex.metrica.**

@@ -9,6 +9,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.Display;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -23,6 +24,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.Lifecycle;
 import androidx.lifecycle.ProcessLifecycleOwner;
 
+import com.facebook.appevents.AppEventsLogger;
 import com.facebook.shimmer.ShimmerFrameLayout;
 import com.google.ads.mediation.admob.AdMobAdapter;
 import com.google.android.gms.ads.AdError;
@@ -30,6 +32,7 @@ import com.google.android.gms.ads.AdListener;
 import com.google.android.gms.ads.AdLoader;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdSize;
+import com.google.android.gms.ads.AdValue;
 import com.google.android.gms.ads.AdView;
 import com.google.android.gms.ads.FullScreenContentCallback;
 import com.google.android.gms.ads.LoadAdError;
@@ -44,13 +47,24 @@ import com.google.android.gms.ads.nativead.NativeAdView;
 import com.google.android.gms.ads.rewarded.RewardedAd;
 import com.google.android.gms.ads.rewarded.RewardedAdLoadCallback;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.util.Currency;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
+import io.appmetrica.analytics.AppMetrica;
+import io.appmetrica.analytics.AppMetricaConfig;
+
 public class AdModule {
+    private static final String TAG = AdModule.class.getSimpleName();
     private static AdModule instance;
 
     private DialogLoading dialog;
+
+    private Map<String, String> adIdsToNameMap = new HashMap<>();
 
     public static AdModule getInstance() {
         if (instance == null) {
@@ -63,7 +77,15 @@ public class AdModule {
 
     }
 
-    public void init(Context context, List<String> testDeviceList) {
+    public Map<String, String> getAdIdsToNameMap() {
+        return adIdsToNameMap;
+    }
+
+    public void setAdIdsToNameMap(Map<String, String> adIdsToNameMap) {
+        this.adIdsToNameMap = adIdsToNameMap;
+    }
+
+    public void init(Context context, List<String> testDeviceList, Map<String, String> adIds, String appmetrica) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
             String processName = Application.getProcessName();
             String packageName = context.getPackageName();
@@ -74,6 +96,10 @@ public class AdModule {
         MobileAds.initialize(context, initializationStatus -> {
         });
         MobileAds.setRequestConfiguration(new RequestConfiguration.Builder().setTestDeviceIds(testDeviceList).build());
+        setAdIdsToNameMap(adIds);
+        // Khởi tạo AppMetrica
+        AppMetricaConfig config = AppMetricaConfig.newConfigBuilder(appmetrica).build();
+        AppMetrica.activate(context, config);
 
     }
 
@@ -148,6 +174,11 @@ public class AdModule {
             }
             return;
         }
+        interstitialAd.setOnPaidEventListener(adValue -> {
+            logFromFacebook(context, adValue, Objects.requireNonNull(getAdIdsToNameMap().get(interstitialAd.getAdUnitId())), "interstitialAd");
+            AppMetrica.reportExternalAdRevenue(adValue, interstitialAd);
+            Log.d(TAG, "on paid inter : "+Objects.requireNonNull(getAdIdsToNameMap().get(interstitialAd.getAdUnitId())));
+        });
         interstitialAd.setFullScreenContentCallback(new FullScreenContentCallback() {
             @Override
             public void onAdDismissedFullScreenContent() {
@@ -234,12 +265,20 @@ public class AdModule {
                 .setVideoOptions(videoOptions)
                 .build();
         AdLoader adLoader = new AdLoader.Builder(context, id)
-                .forNativeAd(callback::onUnifiedNativeAdLoaded)
+                .forNativeAd(adMobNativeAd -> {
+                    adMobNativeAd.setOnPaidEventListener(adValue -> {
+                        AppMetrica.reportExternalAdRevenue(adValue, adMobNativeAd);
+                        logFromFacebook(context, adValue, Objects.requireNonNull(getAdIdsToNameMap().get(id)), "native");
+                        Log.d(TAG, "on paid native : "+Objects.requireNonNull(getAdIdsToNameMap().get(id)));
+                    });
+                    callback.onUnifiedNativeAdLoaded(adMobNativeAd);
+                })
                 .withAdListener(new AdListener() {
                     @Override
                     public void onAdFailedToLoad(LoadAdError error) {
                         callback.onAdFailedToLoad(error);
                     }
+
                     @Override
                     public void onAdClicked() {
                         super.onAdClicked();
@@ -356,6 +395,7 @@ public class AdModule {
     public static final String BANNER_INLINE_LARGE_STYLE = "BANNER_INLINE_LARGE_STYLE";
 
     private final int MAX_SMALL_INLINE_BANNER_HEIGHT = 50;
+
     private AdSize getAdSize(Activity mActivity, Boolean useInlineAdaptive, String inlineStyle) {
 
         Display display = mActivity.getWindowManager().getDefaultDisplay();
@@ -400,6 +440,11 @@ public class AdModule {
             adView.setAdSize(adSize);
             adView.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
             adView.loadAd(getAdRequestForCollapsibleBanner(gravity));
+            adView.setOnPaidEventListener(adValue -> {
+                logFromFacebook(mActivity,adValue, Objects.requireNonNull(getAdIdsToNameMap().get(id)),"collapsible banner");
+                AppMetrica.reportExternalAdRevenue(adValue, adView);
+                Log.d(TAG, "on paid collapsible banner : "+Objects.requireNonNull(getAdIdsToNameMap().get(id)));
+            });
             adView.setAdListener(new AdListener() {
 
                 @Override
@@ -465,6 +510,11 @@ public class AdModule {
             adView.setAdSize(adSize);
             adView.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
             adView.loadAd(getAdRequest());
+            adView.setOnPaidEventListener(adValue -> {
+                logFromFacebook(mActivity,adValue, Objects.requireNonNull(getAdIdsToNameMap().get(id)),"banner");
+                AppMetrica.reportExternalAdRevenue(adValue, adView.getAdUnitId());
+                Log.d(TAG, "on paid banner : "+Objects.requireNonNull(getAdIdsToNameMap().get(id)));
+            });
             adView.setAdListener(new AdListener() {
 
                 @Override
@@ -542,6 +592,34 @@ public class AdModule {
         rewardAds.show(activity, rewardItem -> {
             callback.onUserEarnedReward();
         });
+    }
+
+    public void logFromFacebook(Context context, @NonNull AdValue adValue, @NonNull String adFormat, @NonNull String ad_Source_id) {
+        long microsValue = adValue.getValueMicros();
+
+        try {
+            BigDecimal valueMicros = new BigDecimal(microsValue);
+            BigDecimal valueInCurrency = valueMicros.divide(new BigDecimal(1_000_000), 6, RoundingMode.HALF_UP);
+
+            // Tạo Bundle chứa thông tin log
+            Bundle params = new Bundle();
+            params.putDouble("_ValueToSum", valueInCurrency.doubleValue());
+            params.putDouble("value", valueInCurrency.doubleValue());
+            params.putInt("precision", adValue.getPrecisionType());
+            params.putString("currency", adValue.getCurrencyCode());
+            params.putString("adFormat", adFormat);
+            params.putString("adSourceId", ad_Source_id);
+
+            // Log doanh thu lên Facebook
+            AppEventsLogger facebookLogger = AppEventsLogger.newLogger(context);
+            facebookLogger.logPurchase(
+                    valueInCurrency,
+                    Currency.getInstance(adValue.getCurrencyCode()),
+                    params
+            );
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
 }
