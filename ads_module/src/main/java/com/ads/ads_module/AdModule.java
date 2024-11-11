@@ -599,9 +599,8 @@ public class AdModule {
 
         try {
             BigDecimal valueMicros = new BigDecimal(microsValue);
-            BigDecimal valueInCurrency = valueMicros.divide(new BigDecimal(1_000_000), 6, RoundingMode.HALF_UP);
+            BigDecimal valueInCurrency = valueMicros.divide(new BigDecimal(1_000), 3, RoundingMode.HALF_UP);
 
-            // Tạo Bundle chứa thông tin log
             Bundle params = new Bundle();
             params.putDouble("_ValueToSum", valueInCurrency.doubleValue());
             params.putDouble("value", valueInCurrency.doubleValue());
