@@ -24,6 +24,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.Lifecycle;
 import androidx.lifecycle.ProcessLifecycleOwner;
 
+import com.facebook.appevents.AppEventsConstants;
 import com.facebook.appevents.AppEventsLogger;
 import com.facebook.shimmer.ShimmerFrameLayout;
 import com.google.ads.mediation.admob.AdMobAdapter;
@@ -608,9 +609,11 @@ public class AdModule {
             params.putString("currency", adValue.getCurrencyCode());
             params.putString("adFormat", adFormat);
             params.putString("adSourceId", ad_Source_id);
+            params.putString(AppEventsConstants.EVENT_PARAM_CURRENCY, "USD");
 
             // Log doanh thu lên Facebook
             AppEventsLogger facebookLogger = AppEventsLogger.newLogger(context);
+            facebookLogger.logEvent(AppEventsConstants.EVENT_NAME_AD_IMPRESSION, valueInCurrency.doubleValue(), params);
             facebookLogger.logPurchase(
                     valueInCurrency,
                     Currency.getInstance(adValue.getCurrencyCode()),
